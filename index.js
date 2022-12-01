@@ -49,12 +49,12 @@ class m3u8ToMp4Converter {
    *  "Accept-Encoding": "gzip, deflate, br", TE: "trailers",
    * }
    */
-  setHeaders(config) {
-    if (config && typeof config !== "object")
+  setHeaders(headers) {
+    if (headers && typeof headers !== "object")
       throw new Error("Headers config must be an object");
     else
-      this.headers = Object.keys(config)
-        .map((k) => k + ": " + config[k])
+      this.headers = Object.keys(headers)
+        .map((k) => k + ": " + headers[k])
         .join("\r\n");
     return this;
   }
