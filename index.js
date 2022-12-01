@@ -1,6 +1,7 @@
 /**
  * @description M3U8 to MP4 Converter
  * @author Furkan Inanc
+ * @contributors Ahmed Rowaihi | Support Headers
  * @version 1.0.0
  */
 
@@ -36,21 +37,46 @@ class m3u8ToMp4Converter {
   }
 
   /**
+   * Sets the headers for remote M3U8 file (optional)
+   * @param {Object} headers Headers object
+   * @returns {Function}
+   * @example
+   * {
+   *  Authorization: Bearer AAAAAAAAAAAAAAAAAAAXXXXXXXX,
+   *  "User-Agent":
+   *  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0",
+   *  "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
+   *  "Accept-Encoding": "gzip, deflate, br", TE: "trailers",
+   * }
+   */
+  setHeaders(config) {
+    if (config && typeof config !== "object")
+      throw new Error("Headers config must be an object");
+    else
+      this.headers = Object.keys(config)
+        .map((k) => k + ": " + config[k])
+        .join("\r\n");
+    return this;
+  }
+  /**
    * Starts the process
    */
   start(options = {}) {
     // https://github.com/fluent-ffmpeg/node-fluent-ffmpeg#setting-event-handlers
-    options = Object.assign({
-      onStart: () => { },
-      onEnd: () => { },
-      onError: error => {
-        reject(new Error(error));
+    options = Object.assign(
+      {
+        onStart: () => {},
+        onEnd: () => {},
+        onError: (error) => {
+          reject(new Error(error));
+        },
+        onProgress: () => {},
+        onStderr: () => {},
+        onCodecData: () => {},
       },
-      onProgress: () => { },
-      onStderr: () => { },
-      onCodecData: () => { },
-    }, options);
-    
+      options
+    );
+
     return new Promise((resolve, reject) => {
       if (!this.M3U8_FILE || !this.OUTPUT_FILE) {
         reject(new Error("You must specify the input and the output files"));
@@ -58,11 +84,12 @@ class m3u8ToMp4Converter {
       }
 
       ffmpeg(this.M3U8_FILE)
-        .on('start', options.onStart)
-        .on('codecData', options.onCodecData)
-        .on('progress', options.onProgress)
+        .inputOption("-headers", this.headers ?? "")
+        .on("start", options.onStart)
+        .on("codecData", options.onCodecData)
+        .on("progress", options.onProgress)
         .on("error", options.onError)
-        .on('stderr', options.onStderr)
+        .on("stderr", options.onStderr)
         .on("end", (...args) => {
           resolve();
           options.onEnd(...args);
