@@ -1,7 +1,6 @@
 /**
  * @description M3U8 to MP4 Converter
- * @author Furkan Inanc
- * @contributors Ahmed Rowaihi | Support Headers
+ * @author Ahmed Rowaihi
  * @version 1.0.0
  */
 
